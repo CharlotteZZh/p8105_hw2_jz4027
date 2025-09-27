@@ -7,6 +7,7 @@ output: github_document
 ```{r}
 # Load needed library
 library(tidyverse)
+library(readxl)
 ```
 
 # Problem 1
@@ -93,8 +94,29 @@ pols_month csv file contains the number of politicians (sen, rep, gov, prez) aff
 
 # Problem 2
 ```{r}
-
+# Clean and organize data for Mr. Trash Wheel
+Mr_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N653" ) |>
+  janitor::clean_names() |>
+  filter(!is.na(dumpster)) |>
+  mutate(sports_balls = as.integer(round(sports_balls)))
 ```
+
+```{r}
+# Clean and organize data for Professor Trash Wheel
+Professor_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel") |>
+  janitor::clean_names() |>
+  filter(!is.na(dumpster))
+```
+
+```{r}
+# Clean and organize data for Gwynnda
+Gwynnda_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel") |>
+  janitor::clean_names() |>
+  filter(!is.na(dumpster))
+```
+
+
+
 
 
 
