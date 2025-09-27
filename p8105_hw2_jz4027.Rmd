@@ -12,7 +12,7 @@ library(tidyverse)
 # Problem 1
 ```{r}
 pols_month_df = 
-  # import and clean the data
+  # import and clean pols-month data
   read_csv("./fivethirtyeight_datasets/pols-month.csv", na = c("NA", ".", "")) |>
   janitor::clean_names() |>
   # split mon into year, month, day
@@ -29,9 +29,29 @@ pols_month_df =
   ) |>
   # remove three variables
   select(-day, -prez_gop, -prez_dem)
-  
-
 ```
+```{r}
+snp_df = 
+  # import and clean snp data
+  read_csv("./fivethirtyeight_datasets/snp.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |>
+  # split date into month, day, year
+  separate(date, into = c("month", "day", "year"), sep = "/") |>
+  mutate(
+    # convert to integers
+    year = as.integer(year),
+    # Change from 2-integer years to 4-integer
+    year = if_else(year > 25, 1900 + year, 2000 + year),
+    month = as.integer(month),
+    day = as.integer(day),
+    # replace month number with month name
+    month = month.name[month]) |>
+  select (year, month, close) |>
+  # arrange according to year and month
+  arrange(year, month)
+snp_df
+```
+
 
 
 
