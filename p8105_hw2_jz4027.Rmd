@@ -98,24 +98,48 @@ pols_month csv file contains the number of politicians (sen, rep, gov, prez) aff
 Mr_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N653" ) |>
   janitor::clean_names() |>
   filter(!is.na(dumpster)) |>
-  mutate(sports_balls = as.integer(round(sports_balls)))
+  mutate(sports_balls = as.integer(round(sports_balls)),
+         year = as.integer(year),
+         trash_wheel = "mr. trash wheel") 
+  
 ```
 
 ```{r}
 # Clean and organize data for Professor Trash Wheel
 Professor_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel") |>
   janitor::clean_names() |>
-  filter(!is.na(dumpster))
+  filter(!is.na(dumpster)) |>
+  mutate(year = as.integer(year),
+         trash_wheel = "professor trash wheel")
 ```
 
 ```{r}
 # Clean and organize data for Gwynnda
 Gwynnda_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel") |>
   janitor::clean_names() |>
-  filter(!is.na(dumpster))
+  filter(!is.na(dumpster)) |>
+  mutate(year = as.integer(year),
+         trash_wheel = "gwynnda trsh wheel")
 ```
 
+```{r}
+# Combine
+P2_combined <- bind_rows(Mr_df, Professor_df, Gwynnda_df)
+```
 
+```{r}
+prof_total_weight <- P2_combined |>
+  filter(trash_wheel == "professor trash wheel") |>
+  summarise(total_weight = sum(weight_tons, na.rm = TRUE)) |>
+  pull(total_weight)
+
+gwynnda_june2022_cigarette <- P2_combined |>
+  filter(month == "June", year == 2022, trash_wheel == "gwynnda trash wheel") |>
+  summarise(total_cig_butts = sum(cigarette_butts, na.rm = TRUE)) |>
+  pull(total_cig_butts)
+```
+
+The resulting combined trash wheel dataset contains `r nrow(P2_combined)` observations. Each row corresponds to a dumpster removal event, with key variables including the date, weight of trash, volume of trash, the name of the trash wheel, and the counts of specific types of collected litters. Here is a list of all variables in the combined dataset: `r colnames(P2_combined)`. The total weight of trash collected by Professor Trash Wheel is `r prof_total_weight`. The total number of cigarette butts collected by Gwynnda in June of 2022 is `r gwynnda_june2022_cigarette`. 
 
 
 
