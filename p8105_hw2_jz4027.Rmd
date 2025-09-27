@@ -75,6 +75,15 @@ unemployment_df =
 unemployment_df
 ```
 
+```{r}
+snp_pols_merged_df = 
+  left_join(pols_month_df, snp_df, by = c("year", "month"))
+
+unemployment_merged_df =
+  left_join(snp_pols_merged_df, unemployment_df, by = c("year", "month"))
+unemployment_merged_df
+```
+
 
 
 
