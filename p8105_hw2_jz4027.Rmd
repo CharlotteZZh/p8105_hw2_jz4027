@@ -2,7 +2,7 @@
 title: "p8105_hw2_jz4027"
 author: "Charlotte Zhang"
 date: "2025-09-26"
-output: html_document
+output: github_document
 ---
 ```{r}
 # Load needed library
@@ -10,6 +10,7 @@ library(tidyverse)
 ```
 
 # Problem 1
+### Clean the pols_month data set 
 ```{r}
 pols_month_df = 
   # import and clean pols-month data
@@ -33,6 +34,7 @@ pols_month_df =
 pols_month_df
 ```
 
+### Clean the snp data set
 ```{r}
 snp_df = 
   # import and clean snp data
@@ -56,6 +58,7 @@ snp_df =
 snp_df
 ```
 
+### Clean the unemployment data set
 ```{r}
 unemployment_df = 
   # import and clean unemployment data
@@ -75,6 +78,7 @@ unemployment_df =
 unemployment_df
 ```
 
+### Merge
 ```{r}
 snp_pols_merged_df = 
   left_join(pols_month_df, snp_df, by = c("year", "month"))
@@ -84,7 +88,13 @@ unemployment_merged_df =
 unemployment_merged_df
 ```
 
+### Explain and describe
+pols_month csv file contains the number of politicians (sen, rep, gov, prez) affiliated with the GOP and the democratic party each month, throughout many years. It also shows which party hold the presidency by using 0 and 1. Then, the snp data set contains different dates and their corresponding SP closing value. The date column of the snp data set was also reformatted/cleaned for consistency across data sets. The unemployment data set includes monthly unemployment rate from 1948 to 2015, switched from the original wide format (month as column names) to long format for better format consistency. The resulting combined data set has a dimension of `r dim(unemployment_merged_df)` (rows and columns, respectively). It has a year range between `r range(unemployment_merged_df$year)`. Key variables include: `r colnames(unemployment_merged_df)`.
 
+# Problem 2
+```{r}
+
+```
 
 
 
