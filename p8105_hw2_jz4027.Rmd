@@ -29,7 +29,10 @@ pols_month_df =
   ) |>
   # remove three variables
   select(-day, -prez_gop, -prez_dem)
+
+pols_month_df
 ```
+
 ```{r}
 snp_df = 
   # import and clean snp data
@@ -49,8 +52,29 @@ snp_df =
   select (year, month, close) |>
   # arrange according to year and month
   arrange(year, month)
+
 snp_df
 ```
+
+```{r}
+unemployment_df = 
+  # import and clean unemployment data
+  read_csv("./fivethirtyeight_datasets/unemployment.csv", na = c("NA", ".", "")) |>
+  janitor::clean_names() |>
+  pivot_longer(
+    jan:dec,
+    names_to = 'month',
+    values_to = 'unemployment',
+  ) |>
+  mutate(
+    month = str_to_title(month),            # the first letter of each month is capitalized
+    month = match(month, month.abb),        # convert abbreviation → month number
+    month = month.name[month]               # convert month number to full month name for format consistency 
+  )
+
+unemployment_df
+```
+
 
 
 
