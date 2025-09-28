@@ -95,6 +95,7 @@ unemployment_merged_df
 pols_month csv file contains the number of politicians (sen, rep, gov, prez) affiliated with the GOP and the democratic party each month, throughout many years. It also shows which party hold the presidency by using 0 and 1. Then, the snp data set contains different dates and their corresponding SP closing value. The date column of the snp data set was also reformatted/cleaned for consistency across data sets. The unemployment data set includes monthly unemployment rate from 1948 to 2015, switched from the original wide format (month as column names) to long format for better format consistency. The resulting combined data set has a dimension of `r dim(unemployment_merged_df)` (rows and columns, respectively). It has a year range between `r range(unemployment_merged_df$year)`. Key variables include: `r colnames(unemployment_merged_df)`.
 
 # Problem 2
+### Clean and organize data for Mr. Trash Wheel
 ```{r}
 # Clean and organize data for Mr. Trash Wheel
 Mr_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N653" ) |>
@@ -106,6 +107,7 @@ Mr_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash
   
 ```
 
+### Clean and organize data for Professor Trash Wheel
 ```{r}
 # Clean and organize data for Professor Trash Wheel
 Professor_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel") |>
@@ -115,6 +117,7 @@ Professor_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Pr
          trash_wheel = "professor trash wheel")
 ```
 
+### Clean and organize data for Gwynnda
 ```{r}
 # Clean and organize data for Gwynnda
 Gwynnda_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel") |>
@@ -124,11 +127,13 @@ Gwynnda_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Gwyn
          trash_wheel = "gwynnda trsh wheel")
 ```
 
+### combine
 ```{r}
 # Combine
 P2_combined <- bind_rows(Mr_df, Professor_df, Gwynnda_df)
 ```
 
+### Description
 ```{r}
 prof_total_weight <- P2_combined |>
   filter(trash_wheel == "professor trash wheel") |>
@@ -156,7 +161,7 @@ zori_df =
   janitor::clean_names()
 ```
 
-
+### Clean zori_df
 ```{r}
 # Clean zori_df
 zori_df_cleaned <- zori_df |>
@@ -176,7 +181,7 @@ zori_df_cleaned <- zori_df |>
 # ?????? |> filter(!is.na(zori))
 ```
 
-
+### Clean zip_codes_df
 ```{r}
 # Clean zip_codes_df
 zip_codes_df_cleaned <- zip_codes_df |>
@@ -185,7 +190,7 @@ zip_codes_df_cleaned <- zip_codes_df |>
   arrange(zip_code, county_name)
 ```
 
-
+### Merged and resulting tidy dataset 
 ```{r}
 # Combine zip_codes_df_cleaned with zori_df_cleaned
 p3_merged = left_join(zip_codes_df_cleaned, zori_df_cleaned, by = c("zip_code", "county_name")) |>
@@ -195,16 +200,21 @@ p3_merged = left_join(zip_codes_df_cleaned, zori_df_cleaned, by = c("zip_code", 
     zori_day = as.integer(zori_day)
   ) |>
   arrange(zip_code, county_name)
+```
+Description: In the resulting tidy dataset, there are `r nrow(p3_merged)` observations. The number of unique zip codes is `r length(unique(p3_merged$zip_code))`. The number of unique neighborhood is `r length(unique(p3_merged$neighborhood))`.
 
 
-
-
+### Unique zips in zip_codes csv
+```{r}
 # zip code in zip_codes_df_cleaned only, not zori_df_cleaned
-anti_join(zip_codes_df_cleaned, zori_df_cleaned, by = "zip_code") 
+anti_join(zip_codes_df_cleaned, zori_df_cleaned, by = "zip_code") |>
+  arrange(neighborhood)
+```
+There are 171 zip codes that are in the zip_codes dataset but not in the Zillow Rental Price dataset. The most likely reason is that Zillow excludes areas where there are too few rental listings to get a reliable estimate, such as zip code 10475 (North Bronx) and 11362 (Northeast Queens). These two places are highly local/residential with less tourists/commercial businesses which means lower demand of residential house rentals. And places like Queens Jamaica neighborhood are not in the zillow dataset possibly due to them being an industrial/airport zone with few or no residential homes for rent. 
 
 
-
-
+### Covid price drop
+```{r}
 # covid price drop top 10
 jan2020 <- p3_merged |> filter(zori_month == 1, zori_year == 2020)
 jan2021 <- p3_merged |> filter(zori_month == 1, zori_year == 2021)
@@ -218,8 +228,7 @@ covid_price_comp <- jan2020 |>
   slice(1:10)
 covid_price_comp
 ```
-
-
+The ten ZIP codes with the largest rental price drops between January 2020 and January 2021 were all located in New York County (Manhattan). Zip code 10007 in the lower Manhattan neighborhood had the most dramatic Zillow Observed Rent Index drop, from 6334.21 to 5421.614, a difference of about -912.59. These ten zip codes and neighborhoods contain many residential units, but are also considered as touristy, busy, and linked to office employment. During the pandemic, the reduction in tourists and shift to remote work may have reduced the rental demand, which help explain the large price drops.
 
 
 
