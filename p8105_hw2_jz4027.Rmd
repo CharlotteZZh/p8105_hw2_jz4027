@@ -156,6 +156,7 @@ zori_df =
   janitor::clean_names()
 ```
 
+
 ```{r}
 # Clean zori_df
 zori_df_cleaned <- zori_df |>
@@ -169,20 +170,54 @@ zori_df_cleaned <- zori_df |>
   mutate(date = str_remove(date, "^x"),
          zori = as.numeric(zori),
          county_name = str_remove(county_name, "\\s+County$")) |>
-  separate(date, into = c("year", "month", "day"), sep = "_") |>
+  separate(date, into = c("zori_year", "zori_month", "zori_day"), sep = "_") |>
   relocate(zip_code, county_name) |>
-  arrange(county_name, zip_code)
-# |> filter(!is.na(zori))
+  arrange(zip_code, county_name)
+# ?????? |> filter(!is.na(zori))
 ```
+
 
 ```{r}
 # Clean zip_codes_df
 zip_codes_df_cleaned <- zip_codes_df |>
   rename(county_name = county) |>
   relocate(zip_code, county_name) |>  
-  arrange(county_name, zip_code)
+  arrange(zip_code, county_name)
 ```
 
+
+```{r}
+# Combine zip_codes_df_cleaned with zori_df_cleaned
+p3_merged = left_join(zip_codes_df_cleaned, zori_df_cleaned, by = c("zip_code", "county_name")) |>
+  mutate(
+    zori_year = as.integer(zori_year),
+    zori_month = as.integer(zori_month),
+    zori_day = as.integer(zori_day)
+  ) |>
+  arrange(zip_code, county_name)
+
+
+
+
+# zip code in zip_codes_df_cleaned only, not zori_df_cleaned
+anti_join(zip_codes_df_cleaned, zori_df_cleaned, by = "zip_code") 
+
+
+
+
+# covid price drop top 10
+jan2020 <- p3_merged |> filter(zori_month == 1, zori_year == 2020)
+jan2021 <- p3_merged |> filter(zori_month == 1, zori_year == 2021)
+covid_price_comp <- jan2020 |>
+  select(zip_code, county_name, neighborhood, zori_2020 = zori) |>
+  inner_join(jan2021 |> select(zip_code, zori_2021 = zori), by = "zip_code") |>
+  mutate(
+    diff = zori_2021 - zori_2020
+  ) |>
+  arrange(diff) |>
+  slice(1:10)
+covid_price_comp
+```
 
 
 
