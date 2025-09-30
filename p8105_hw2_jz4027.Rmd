@@ -51,12 +51,13 @@ snp_df =
     # Change from 2-integer years to 4-integer
     year = if_else(year > 25, 1900 + year, 2000 + year),
     month = as.integer(month),
-    day = as.integer(day),
-    # replace month number with month name
-    month = month.name[month]) |>
+    day = as.integer(day)) |>
   select (year, month, close) |>
   # arrange according to year and month
-  arrange(year, month)
+  arrange(year, month) |>
+  # replace month number with month name
+  mutate(
+    month = month.name[month])
 
 snp_df
 ```
@@ -98,7 +99,7 @@ pols_month csv file contains the number of politicians (sen, rep, gov, prez) aff
 ### Clean and organize data for Mr. Trash Wheel
 ```{r}
 # Clean and organize data for Mr. Trash Wheel
-Mr_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N653" ) |>
+Mr_df = read_excel("202509 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", range = "A2:N709" ) |>
   janitor::clean_names() |>
   filter(!is.na(dumpster)) |>
   mutate(sports_balls = as.integer(round(sports_balls)),
@@ -110,27 +111,27 @@ Mr_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash
 ### Clean and organize data for Professor Trash Wheel
 ```{r}
 # Clean and organize data for Professor Trash Wheel
-Professor_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel") |>
+Professor_df = read_excel("202509 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel") |>
   janitor::clean_names() |>
   filter(!is.na(dumpster)) |>
   mutate(year = as.integer(year),
          trash_wheel = "professor trash wheel")
 ```
 
-### Clean and organize data for Gwynnda
+### Clean and organize data for Gwynns_df
 ```{r}
-# Clean and organize data for Gwynnda
-Gwynnda_df = read_excel("202409 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel") |>
+# Clean and organize data for Gwynns_df
+Gwynns_df = read_excel("202509 Trash Wheel Collection Data.xlsx", sheet = "Gwynns Falls Trash Wheel") |>
   janitor::clean_names() |>
   filter(!is.na(dumpster)) |>
   mutate(year = as.integer(year),
-         trash_wheel = "gwynnda trsh wheel")
+         trash_wheel = "gwynns falls trash wheel")
 ```
 
 ### combine
 ```{r}
 # Combine
-P2_combined <- bind_rows(Mr_df, Professor_df, Gwynnda_df)
+P2_combined <- bind_rows(Mr_df, Professor_df, Gwynns_df)
 ```
 
 ### Description
@@ -140,13 +141,13 @@ prof_total_weight <- P2_combined |>
   summarise(total_weight = sum(weight_tons, na.rm = TRUE)) |>
   pull(total_weight)
 
-gwynnda_june2022_cigarette <- P2_combined |>
-  filter(month == "June", year == 2022, trash_wheel == "gwynnda trash wheel") |>
+gwynns_june2022_cigarette <- P2_combined |>
+  filter(month == "June", year == 2022, trash_wheel == "gwynns falls trash wheel") |>
   summarise(total_cig_butts = sum(cigarette_butts, na.rm = TRUE)) |>
   pull(total_cig_butts)
 ```
 
-The resulting combined trash wheel dataset contains `r nrow(P2_combined)` observations. Each row corresponds to a dumpster removal event, with key variables including the date, weight of trash, volume of trash, the name of the trash wheel, and the counts of specific types of collected litters. Here is a list of all variables in the combined dataset: `r colnames(P2_combined)`. The total weight of trash collected by Professor Trash Wheel is `r prof_total_weight`. The total number of cigarette butts collected by Gwynnda in June of 2022 is `r gwynnda_june2022_cigarette`. 
+The resulting combined trash wheel dataset contains `r nrow(P2_combined)` observations. Each row corresponds to a dumpster removal event, with key variables including the date, weight of trash, volume of trash, the name of the trash wheel, and the counts of specific types of collected litters. Here is a list of all variables in the combined dataset: `r colnames(P2_combined)`. The total weight of trash collected by Professor Trash Wheel is `r prof_total_weight`. The total number of cigarette butts collected by Gwynnda in June of 2022 is `r gwynns_june2022_cigarette`. 
 
 
 # Problem 3
@@ -185,21 +186,20 @@ zori_df_cleaned <- zori_df |>
 ```{r}
 # Clean zip_codes_df
 zip_codes_df_cleaned <- zip_codes_df |>
-  rename(county_name = county) |>
-  relocate(zip_code, county_name) |>  
-  arrange(zip_code, county_name)
+  relocate(zip_code, county) |>  
+  arrange(zip_code, county)
 ```
 
 ### Merged and resulting tidy dataset 
 ```{r}
 # Combine zip_codes_df_cleaned with zori_df_cleaned
-p3_merged = left_join(zip_codes_df_cleaned, zori_df_cleaned, by = c("zip_code", "county_name")) |>
+p3_merged = left_join(zip_codes_df_cleaned, zori_df_cleaned, by = "zip_code", relationship = "many-to-many") |>
   mutate(
     zori_year = as.integer(zori_year),
     zori_month = as.integer(zori_month),
     zori_day = as.integer(zori_day)
   ) |>
-  arrange(zip_code, county_name)
+  arrange(zip_code)
 ```
 Description: In the resulting tidy dataset, there are `r nrow(p3_merged)` observations. The number of unique zip codes is `r length(unique(p3_merged$zip_code))`. The number of unique neighborhood is `r length(unique(p3_merged$neighborhood))`.
 
@@ -219,14 +219,14 @@ There are 171 zip codes that are in the zip_codes dataset but not in the Zillow 
 jan2020 <- p3_merged |> filter(zori_month == 1, zori_year == 2020)
 jan2021 <- p3_merged |> filter(zori_month == 1, zori_year == 2021)
 covid_price_comp <- jan2020 |>
-  select(zip_code, county_name, neighborhood, zori_2020 = zori) |>
-  inner_join(jan2021 |> select(zip_code, zori_2021 = zori), by = "zip_code") |>
+  select(zip_code, county, neighborhood, zori_2020 = zori) |>
+  inner_join(jan2021 |> select(zip_code, zori_2021 = zori), by = "zip_code", relationship = "many-to-many") |>
   mutate(
     diff = zori_2021 - zori_2020
   ) |>
   arrange(diff) |>
   slice(1:10)
-covid_price_comp
+knitr::kable(covid_price_comp)
 ```
 The ten ZIP codes with the largest rental price drops between January 2020 and January 2021 were all located in New York County (Manhattan). Zip code 10007 in the lower Manhattan neighborhood had the most dramatic Zillow Observed Rent Index drop, from 6334.21 to 5421.614, a difference of about -912.59. These ten zip codes and neighborhoods contain many residential units, but are also considered as touristy, busy, and linked to office employment. During the pandemic, the reduction in tourists and shift to remote work may have reduced the rental demand, which help explain the large price drops.
 
