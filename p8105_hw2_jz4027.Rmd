@@ -8,7 +8,6 @@ output: github_document
 # Load needed library
 library(tidyverse)
 library(readxl)
-library(lubridate)
 library(janitor)
 ```
 
@@ -52,7 +51,7 @@ snp_df =
     year = if_else(year > 25, 1900 + year, 2000 + year),
     month = as.integer(month),
     day = as.integer(day)) |>
-  select (year, month, close) |>
+  select(year, month, close) |>
   # arrange according to year and month
   arrange(year, month) |>
   # replace month number with month name
@@ -105,7 +104,6 @@ Mr_df = read_excel("202509 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash
   mutate(sports_balls = as.integer(round(sports_balls)),
          year = as.integer(year),
          trash_wheel = "mr. trash wheel") 
-  
 ```
 
 ### Clean and organize data for Professor Trash Wheel
@@ -128,7 +126,7 @@ Gwynns_df = read_excel("202509 Trash Wheel Collection Data.xlsx", sheet = "Gwynn
          trash_wheel = "gwynns falls trash wheel")
 ```
 
-### combine
+### Combine
 ```{r}
 # Combine
 P2_combined <- bind_rows(Mr_df, Professor_df, Gwynns_df)
@@ -179,7 +177,6 @@ zori_df_cleaned <- zori_df |>
   separate(date, into = c("zori_year", "zori_month", "zori_day"), sep = "_") |>
   relocate(zip_code, county_name) |>
   arrange(zip_code, county_name)
-# ?????? |> filter(!is.na(zori))
 ```
 
 ### Clean zip_codes_df
